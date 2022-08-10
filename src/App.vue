@@ -1,6 +1,7 @@
 <template>
   <TopItem />
   <LeftItem />
+  <router-view />
 </template>
 
 <script setup lang="ts">
