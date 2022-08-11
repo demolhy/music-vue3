@@ -3,7 +3,10 @@
     <!-- <div class="loading" id="loading"></div> -->
     <div class="content">
       <el-carousel :interval="4000" type="card" height="200px" :autoplay="true">
-        <el-carousel-item v-for="item in pageContent.bannerList" :key="item.encodeId">
+        <el-carousel-item
+          v-for="item in pageContent.bannerList"
+          :key="item.encodeId"
+        >
           <img :src="item.imageUrl" />
         </el-carousel-item>
       </el-carousel>
@@ -14,8 +17,8 @@
         <div class="list_box">
           <div class="box">
             <div class="list1 list">
-              <h5>星期三</h5>
-              <p>10</p>
+              <h5>{{ getDay }}</h5>
+              <p>{{ new Date().getDate() }}</p>
             </div>
             <p>每日推荐</p>
           </div>
@@ -45,7 +48,7 @@
           >
             <div class="lf">
               <span>{{ index + 1 }}</span>
-              <img :src="item.picUrl" alt="" />
+              <img :src="item.picUrl" />
               <h5>{{ item.name }}</h5>
             </div>
             <div class="singer">{{ item.singerName }}</div>
@@ -54,7 +57,7 @@
                 item.song.transName === null ? item.name : item.song.transName
               }}
             </div>
-            <div class="time">05:00</div>
+            <div class="time">{{ getDuration(item.song.duration) }}</div>
           </li>
         </ul>
       </div>
@@ -63,10 +66,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue';
-import { ElCarousel, ElCarouselItem } from 'element-plus'
+import { computed, onMounted, reactive } from 'vue'
+// import { ElCarousel, ElCarouselItem } from 'element-plus'
 import { Banners, SongMenuList, NewMusicList } from '@/types/home'
 import http from '@/request/index'
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 let pageContent = reactive({
   bannerList: [] as Banners,
@@ -87,16 +93,54 @@ const getSongMenuList = async () => {
 }
 // 获取最新音乐
 const getNewMusicList = async () => {
-  const data = await http.get('/personalized/newsong', { limit: 10 })
+  const data = await http.get('/personalized/newsong', { limit: 20 })
   pageContent.newMusicList = data.result
 }
 // 跳转歌单详情
 const toListDetail = (id: number) => {
   console.log(id)
+  router.push({
+    path: '/songListDetail',
+    query: {
+      id
+    }
+  })
 }
-const onPalyMusic = () => {
-
-}
+const onPalyMusic = () => {}
+// 歌曲时长
+const getDuration = computed(() => {
+  return (duration: number) => {
+    const str = (duration / 60 / 1000).toFixed(2)
+    return str.replace('.', ':')
+  }
+})
+const getDay = computed(() => {
+  let time
+  let week = new Date().getDay()
+  switch (week) {
+    case 0:
+      time = '星期日'
+      break
+    case 1:
+      time = '星期一'
+      break
+    case 2:
+      time = '星期二'
+      break
+    case 3:
+      time = '星期三'
+      break
+    case 4:
+      time = '星期四'
+      break
+    case 5:
+      time = '星期五'
+      break
+    default:
+      time = '星期六'
+  }
+  return time
+})
 onMounted(() => {
   getBanner()
   getSongMenuList()

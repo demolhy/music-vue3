@@ -5,6 +5,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/songListDetail',
+    name: 'SongListDetail',
+    component: () => import('@/views/songListDetaild.vue')
+  },
+  {
+    path: '/musicDetail',
+    name: 'MusicDetail',
+    component: () => import('@/views/musicDetail.vue')
   }
 ]
 

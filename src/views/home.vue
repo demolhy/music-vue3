@@ -22,10 +22,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, shallowRef } from 'vue'
-import Recommend from './components/Recommend.vue'
-import SongList from './components/SongList.vue'
-import RadioShow from './components/RadioShow.vue'
-import RakingList from './components/RakingList.vue'
+import Recommend from '@/views/components/Recommend.vue'
+import SongList from '@/views/components/SongList.vue'
+import RadioShow from '@/views/components/RadioShow.vue'
+import RakingList from '@/views/components/RakingList.vue'
 
 const active = ref(0)
 let currentView = shallowRef(Recommend)
@@ -83,11 +83,11 @@ function toDetail(name: string, index: number) {
 
 <style lang="scss" scoped>
 .home {
-  position: fixed;
-  top: 55px;
-  left: 200px;
-  right: 0;
-  bottom: 0;
+  // position: fixed;
+  // top: 55px;
+  // left: 200px;
+  // right: 0;
+  // bottom: 0;
   box-sizing: border-box;
   padding: 0 30px;
   background: #fafafa;

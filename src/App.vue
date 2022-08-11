@@ -1,12 +1,24 @@
 <template>
-  <TopItem />
-  <LeftItem />
-  <router-view />
+  <div v-if="!store.showDetail">
+    <TopItem />
+    
+    <LeftItem />
+    <div class="box_content">
+      <router-view />
+    </div>
+  </div>
+  <Footer />
+  <MusicDetail />
 </template>
 
 <script setup lang="ts">
-import LeftItem from './components/LeftItem.vue'
-import TopItem from './components/TopItem.vue'
+import LeftItem from '@/components/LeftItem.vue'
+import TopItem from '@/components/TopItem.vue'
+import Footer from '@/components/Footer.vue'
+import MusicDetail from '@/views/musicDetail.vue'
+import { useCounterStore } from '@/store/index'
+
+const store = useCounterStore()
 </script>
 
 <style lang="less">
