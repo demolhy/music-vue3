@@ -9,7 +9,7 @@
       <div class="ms" v-if="pageContent.songData.al">
         <div class="lf">
           <!-- <img src="../assets/singlecover.png" alt=""> -->
-          <img class="cover" :src="pageContent.songData.al.picUrl" alt="" />
+          <img v-if="store.showDetail" class="cover" :src="pageContent.songData.al.picUrl" alt="" />
           <div class="m_btn">
             <div class="btn"><i class="iconfont icon-xinaixin"></i>喜欢</div>
             <div class="btn"><i class="iconfont icon-shoucang"></i>收藏</div>
@@ -84,12 +84,13 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted, computed } from 'vue'
+import { reactive, ref, onMounted, computed, getCurrentInstance } from 'vue'
 // import { ElInfiniteScroll } from 'element-plus'
 import { SongData, ObjLyri, CommentList, ObjLyricItem } from '@/types/home'
 import http from '@/request/index'
 import { useCounterStore } from '@/store/index'
 
+const { proxy } = getCurrentInstance()
 const store = useCounterStore()
 const pageContent = reactive({
   Lyindex: 0,
@@ -106,6 +107,9 @@ const emptyData = ref(false)
 const getContent = async () => {
   const data = await http.get('/song/detail', { ids: 516823326 })
   pageContent.songData = data.songs[0]
+  console.log(proxy);
+  
+  proxy.$loadings.hide()
 }
 // 获取评论
 const getHotComment = async () => {

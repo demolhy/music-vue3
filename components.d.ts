@@ -9,10 +9,10 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     ElCarousel: typeof import('element-plus/es')['ElCarousel']
     ElCarouselItem: typeof import('element-plus/es')['ElCarouselItem']
-    ElIcon: typeof import('element-plus/es')['ElIcon']
     ElSlider: typeof import('element-plus/es')['ElSlider']
     Footer: typeof import('./src/components/Footer.vue')['default']
     LeftItem: typeof import('./src/components/LeftItem.vue')['default']
+    Loading: typeof import('./src/components/Loading.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TopItem: typeof import('./src/components/TopItem.vue')['default']

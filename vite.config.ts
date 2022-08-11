@@ -26,7 +26,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/dev': {
-        target: 'http://159.75.78.121:3000',
+        target: 'https://netease-liard.vercel.app',
         changeOrigin: true,
         secure: true,
         rewrite: path => path.replace('/dev', '')

@@ -63,9 +63,11 @@
       </div>
     </div>
   </div>
+  <Loading />
 </template>
 
 <script setup lang="ts">
+import Loading from '@/components/Loading.vue'
 import { computed, onMounted, reactive } from 'vue'
 // import { ElCarousel, ElCarouselItem } from 'element-plus'
 import { Banners, SongMenuList, NewMusicList } from '@/types/home'
