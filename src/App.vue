@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!store.showDetail">
+  <div v-show="!store.showDetail">
     <TopItem />
     
     <LeftItem />

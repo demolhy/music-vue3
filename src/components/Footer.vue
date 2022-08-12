@@ -1,9 +1,17 @@
 <template>
   <div class="footer">
-    <div class="slider"><el-slider v-model="slider" size="small" /></div>
-    <div class="player_box" @click="showBox">
+    <div class="slider">
+      <el-slider
+        v-model="slider"
+        size="small"
+        :format-tooltip="formatProcessToolTip"
+        @change="changeCurrentTime"
+        @input="changeCurrentTime"
+      />
+    </div>
+    <div class="player_box">
       <div class="left_box">
-        <div class="pic">
+        <div class="pic" @click="showBox">
           <img :src="pageContent.songItem.al.picUrl" alt="" />
         </div>
         <div class="text">
@@ -12,7 +20,8 @@
             }}<span>- {{ pageContent.songItem.ar[0].name }}</span>
           </div>
           <div class="time">
-            {{ pageContent.playTime }} / {{ pageContent.allTime }}
+            {{ realFormatSecond(pageContent.playTime) }} /
+            {{ realFormatSecond(pageContent.allTime) }}
           </div>
         </div>
       </div>
@@ -26,12 +35,14 @@
         :list="songs"
       >
       </aplayer> -->
-      <!-- <audio
-        :id="songId"
+      <audio
         ref="videoPlayer"
-        :src="url"
-        style="display:none"
-      ></audio> -->
+        @pause="onPause"
+        @play="onPlay"
+        @timeupdate="onTimeupdate"
+        @loadedmetadata="onLoadedmetadata"
+        :src="musicSrc"
+      ></audio>
     </div>
     <div class="play_icon">
       <i @click="onNext" class="icon1 iconfont icon-xiayishou1"></i>
@@ -62,29 +73,63 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, Ref, watch, nextTick } from 'vue'
 import { SongItem } from '@/types/home'
 import { useCounterStore } from '@/store/index'
+import music from '@/static/music/falling-star.mp3'
 
 const store = useCounterStore()
 const musicStute = ref(false)
 const slider = ref(0)
+const videoPlayer = ref()
+const musicSrc = ref(store.musicSrcData)
 const pageContent = reactive({
   songItem: {
-    name: '宝贝',
+    name: '星球坠落Live',
     al: {
       picUrl:
-        'http://p2.music.126.net/JGN80JTxwxWScbfsAyVCIg==/3311729030827266.jpg?param=130y130'
+        'http://p1.music.126.net/Hx-PJgpdWJIA8PEx_2XJag==/109951163575606355.jpg?param=130y130'
     },
     ar: [
       {
-        name: '张悬'
+        name: '艾热/李佳隆'
       }
     ]
   } as SongItem,
-  playTime: '00:00',
-  allTime: ''
+  playTime: 0,
+  allTime: 0
 })
+console.log('old',musicSrc.value);
+const subscribe = store.$subscribe(
+  async(mutation: unknown, state: { musicSrcData: string }) => {
+    /*
+      * mutation主要包含三个属性值：
+      *   events：当前state改变的具体数据，包括改变前的值和改变后的值等等数据
+      *   storeId：是当前store的id
+      *   type：用于记录这次数据变化是通过什么途径，主要有三个分别是
+      *         “direct” ：通过 action 变化的
+                ”patch object“ ：通过 $patch 传递对象的方式改变的
+                “patch function” ：通过 $patch 传递函数的方式改变的
+      *
+      * */
+    // 我们就可以在此处监听store中值的变化，当变化为某个值的时候，去做一些业务操作之类的
+    // console.log(mutation)
+    // console.log(state.baseUrl)
+    // if (state.baseUrl === afterChangeUrl) isShow.value = true
+    // else isShow.value = false
+    console.log('====================================');
+    console.log(mutation, state.musicSrcData);
+    console.log('====================================');
+    musicSrc.value = state.musicSrcData
+    console.log('new',musicSrc.value);
+    
+    slider.value = 0
+    await nextTick()
+    videoPlayer.value.play()
+  },
+  { detached: true }
+)
+
 const showBox = () => {
   store.setShowDetail()
 }
@@ -93,9 +138,53 @@ const onNext = () => {
 }
 const onPauseing = () => {
   musicStute.value = !musicStute.value
+  videoPlayer.value.pause()
 }
 const onPlaying = () => {
   musicStute.value = !musicStute.value
+  videoPlayer.value.play()
+}
+// 播放位置
+const onTimeupdate = (res: { target: { currentTime: number } }): void => {
+  // console.log(res)
+  pageContent.playTime = res.target.currentTime
+  slider.value = (pageContent.playTime / pageContent.allTime) * 100
+}
+// 音乐总时长
+const onLoadedmetadata = (res: { target: { duration: string } }) => {
+  pageContent.allTime = parseInt(res.target.duration)
+}
+const onPause = () => {
+  musicStute.value = false
+}
+const onPlay = () => {
+  musicStute.value = true
+}
+// 改变播放位置
+const changeCurrentTime = (index: number) => {
+  videoPlayer.value.currentTime = (index / 100) * pageContent.allTime
+  console.log(index, videoPlayer.value)
+}
+const formatProcessToolTip = (index = 0) => {
+  const html = (pageContent.allTime / 100) * index
+  return `进度条：${realFormatSecond(html)}`
+}
+
+const realFormatSecond = (second: string | number) => {
+  var secondType = typeof second
+
+  if (secondType === 'number' || secondType === 'string') {
+    second = parseInt(second.toString())
+
+    var hours = Math.floor(second / 3600)
+    second = second - hours * 3600
+    var mimute = Math.floor(second / 60)
+    second = second - mimute * 60
+
+    return ('0' + mimute).slice(-2) + ':' + ('0' + second).slice(-2)
+  } else {
+    return '00:00'
+  }
 }
 </script>
 
@@ -169,7 +258,7 @@ const onPlaying = () => {
   align-items: center;
   border-top: 2px solid #eee;
   padding: 0px;
-  .slider{
+  .slider {
     position: absolute;
     bottom: 38px;
     width: 100%;
@@ -327,13 +416,14 @@ const onPlaying = () => {
 // }
 </style>
 <style>
-.footer .el-slider__runway,.footer .el-slider__bar{
+.footer .el-slider__runway,
+.footer .el-slider__bar {
   height: 3px;
 }
-.footer .el-slider__bar{
+.footer .el-slider__bar {
   background-color: #ff3b3b;
 }
-.footer .el-slider__button{
+.footer .el-slider__button {
   width: 12px;
   height: 12px;
   border-color: #ff3b3b;

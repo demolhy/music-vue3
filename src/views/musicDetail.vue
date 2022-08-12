@@ -1,5 +1,5 @@
 <template>
-  <div v-if="pageContent.commentList.length > 0" class="ani_box" :class="store.showDetail === true ? 'on' : ''" v-infinite-scroll="onLoad" :infinite-scroll-disabled="disabled" style="height: 1000px;">
+  <div v-if="pageContent.commentList.length > 0 && pageContent.songData" class="ani_box" :class="store.showDetail === true ? 'on' : ''" v-infinite-scroll="onLoad" :infinite-scroll-disabled="disabled" style="height: 1000px;">
     <div
       class="bg-blur"
       :style="'background: url(' + pageContent.songData.al.picUrl + ')'"
@@ -84,13 +84,15 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted, computed, getCurrentInstance } from 'vue'
+import { reactive, ref, onMounted, computed, getCurrentInstance, ComponentInternalInstance } from 'vue'
 // import { ElInfiniteScroll } from 'element-plus'
 import { SongData, ObjLyri, CommentList, ObjLyricItem } from '@/types/home'
 import http from '@/request/index'
 import { useCounterStore } from '@/store/index'
 
-const { proxy } = getCurrentInstance()
+// const app = getCurrentInstance() as ComponentInternalInstance
+
+// const progressBar = app.appContext.config.globalProperties.$loadings
 const store = useCounterStore()
 const pageContent = reactive({
   Lyindex: 0,
@@ -107,9 +109,16 @@ const emptyData = ref(false)
 const getContent = async () => {
   const data = await http.get('/song/detail', { ids: 516823326 })
   pageContent.songData = data.songs[0]
-  console.log(proxy);
+  // console.log(proxy.$loadings);
   
-  proxy.$loadings.hide()
+  // setTimeout(() => {
+  //   progressBar.hide()
+  // }, 2000);
+  // console.log(proxy.appContext.config.globalProperties.$loadings);
+  
+  // setTimeout(() => {
+  // proxy && proxy.appContext.config.globalProperties.$loadings.hide()
+  // }, 1000);
 }
 // 获取评论
 const getHotComment = async () => {
@@ -171,6 +180,7 @@ const onLoad = (e: any) => {
   getHotComment()
 }
 onMounted(() => {
+  // progressBar.show()
   getContent()
   getHotComment()
   getLyric()

@@ -18,26 +18,35 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-const state = ref(true)
-const hide = () => {
-  state.value = false
-}
-const show = () => {
-  state.value = true
-}
+<script lang="ts">
+import { ref, defineComponent } from 'vue'
+export default defineComponent({
+  setup() {
+    const state = ref(false)
+    const hide = () => {
+      state.value = false
+    }
+    const show = () => {
+      state.value = true
+    }
+    return {
+      state,
+      hide,
+      show
+    }
+  }
+})
 </script>
 <style lang="less" scoped>
-.loading {
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999999;
-}
+// .loading {
+//   position: fixed;
+//   left: 0;
+//   top: 0;
+//   right: 0;
+//   bottom: 0;
+//   background: rgba(0, 0, 0, 0.5);
+//   z-index: 999999;
+// }
 
 @keyframes ldio-1p3kvhj8q2a-1 {
   0% {

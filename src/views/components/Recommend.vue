@@ -1,80 +1,99 @@
 <template>
   <div>
     <!-- <div class="loading" id="loading"></div> -->
-    <div class="content">
-      <el-carousel :interval="4000" type="card" height="200px" :autoplay="true">
-        <el-carousel-item
-          v-for="item in pageContent.bannerList"
-          :key="item.encodeId"
+    <div class="content" v-loading-state:state="loading">
+      <div v-if="!loading">
+        <el-carousel
+          :interval="4000"
+          type="card"
+          height="200px"
+          :autoplay="true"
         >
-          <img :src="item.imageUrl" />
-        </el-carousel-item>
-      </el-carousel>
-      <div class="content_list">
-        <div class="title">
-          <h5>推荐歌单</h5>
-        </div>
-        <div class="list_box">
-          <div class="box">
-            <div class="list1 list">
-              <h5>{{ getDay }}</h5>
-              <p>{{ new Date().getDate() }}</p>
-            </div>
-            <p>每日推荐</p>
-          </div>
-          <div
-            class="box"
-            v-for="(item, index) in pageContent.songMenuList"
-            :key="index"
-            @click="toListDetail(item.id)"
+          <el-carousel-item
+            v-for="item in pageContent.bannerList"
+            :key="item.encodeId"
           >
-            <div class="list1 list">
-              <img :src="item.coverImgUrl" />
+            <img :src="item.imageUrl" />
+          </el-carousel-item>
+        </el-carousel>
+        <div class="content_list">
+          <div class="title">
+            <h5>推荐歌单</h5>
+          </div>
+          <div class="list_box">
+            <div class="box">
+              <div class="list1 list">
+                <h5>{{ getDay }}</h5>
+                <p>{{ new Date().getDate() }}</p>
+              </div>
+              <p>每日推荐</p>
             </div>
-            <p>{{ item.name }}</p>
+            <div
+              class="box"
+              v-for="(item, index) in pageContent.songMenuList"
+              :key="index"
+              @click="toListDetail(item.id)"
+            >
+              <div class="list1 list">
+                <img :src="item.coverImgUrl" />
+              </div>
+              <p>{{ item.name }}</p>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="content_list">
-        <div class="title">
-          <h5>最新音乐</h5>
+        <div class="content_list">
+          <div class="title">
+            <h5>最新音乐</h5>
+          </div>
+          <ul class="music_list">
+            <li
+              class="list"
+              v-for="(item, index) in pageContent.newMusicList"
+              :key="index"
+              @dblclick="onPalyMusic(item.id)"
+            >
+              <div class="lf">
+                <span>{{ index + 1 }}</span>
+                <img :src="item.picUrl" />
+                <h5>{{ item.name }}</h5>
+              </div>
+              <div class="singer">{{ item.singerName }}</div>
+              <div class="album">
+                {{
+                  item.song.transName === null ? item.name : item.song.transName
+                }}
+              </div>
+              <div class="time">{{ getDuration(item.song.duration) }}</div>
+            </li>
+          </ul>
         </div>
-        <ul class="music_list">
-          <li
-            class="list"
-            v-for="(item, index) in pageContent.newMusicList"
-            :key="index"
-            @click="onPalyMusic()"
-          >
-            <div class="lf">
-              <span>{{ index + 1 }}</span>
-              <img :src="item.picUrl" />
-              <h5>{{ item.name }}</h5>
-            </div>
-            <div class="singer">{{ item.singerName }}</div>
-            <div class="album">
-              {{
-                item.song.transName === null ? item.name : item.song.transName
-              }}
-            </div>
-            <div class="time">{{ getDuration(item.song.duration) }}</div>
-          </li>
-        </ul>
       </div>
     </div>
   </div>
-  <Loading />
+  <!-- <Loading /> -->
 </template>
 
 <script setup lang="ts">
-import Loading from '@/components/Loading.vue'
-import { computed, onMounted, reactive } from 'vue'
+// import Loading from '@/components/Loading.vue'
+import {
+  ComponentInternalInstance,
+  computed,
+  getCurrentInstance,
+  onMounted,
+  reactive,
+  ref
+} from 'vue'
 // import { ElCarousel, ElCarouselItem } from 'element-plus'
 import { Banners, SongMenuList, NewMusicList } from '@/types/home'
 import http from '@/request/index'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
+import { useCounterStore } from '@/store/index'
 
+const store = useCounterStore()
 const router = useRouter()
+const app = getCurrentInstance() as ComponentInternalInstance
+const progressBar = app.appContext.config.globalProperties.$loadings
+const loading = ref(false)
 
 let pageContent = reactive({
   bannerList: [] as Banners,
@@ -97,6 +116,8 @@ const getSongMenuList = async () => {
 const getNewMusicList = async () => {
   const data = await http.get('/personalized/newsong', { limit: 20 })
   pageContent.newMusicList = data.result
+  // progressBar.hide()
+  loading.value = false
 }
 // 跳转歌单详情
 const toListDetail = (id: number) => {
@@ -108,7 +129,15 @@ const toListDetail = (id: number) => {
     }
   })
 }
-const onPalyMusic = () => {}
+const onPalyMusic = async(ids: number) => {
+  console.log(ids);
+  const musicData = await http.get('song/url', { id: ids })
+  store.setMusicSrc(musicData.data[0].url)
+  const data = await http.get('/song/detail', { ids })
+  console.log(musicData.data[0].url);
+  
+  
+}
 // 歌曲时长
 const getDuration = computed(() => {
   return (duration: number) => {
@@ -144,6 +173,8 @@ const getDay = computed(() => {
   return time
 })
 onMounted(() => {
+  loading.value = true
+  // progressBar.show()
   getBanner()
   getSongMenuList()
   getNewMusicList()
