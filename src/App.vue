@@ -1,10 +1,15 @@
 <template>
   <div v-show="!store.showDetail">
     <TopItem />
-    
+
     <LeftItem />
     <div class="box_content">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <keep-alive>
+          <component :is="Component" v-if="$route.meta.keepAlive" />
+        </keep-alive>
+        <component :is="Component" v-if="!$route.meta.keepAlive" />
+      </router-view>
     </div>
   </div>
   <Footer />

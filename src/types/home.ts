@@ -69,7 +69,9 @@ export type CommentListItem = {
 }
 
 export type SongItem = {
-
+  name: string,
+  picUrl: string,
+  ar: string
 }
 
 export type Banners = BannersItem[]
