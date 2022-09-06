@@ -8,4 +8,4 @@ import Loading from './components/loading';
 const pinia = createPinia()
 const app = createApp(App)
 
-app.use(pinia).use(Loading).use(router).mount('#app')
+app.use(pinia).use(Loading as any).use(router).mount('#app')

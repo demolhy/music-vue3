@@ -38,8 +38,8 @@
         ref="videoPlayer"
         @pause="onPause"
         @play="onPlay"
-        @timeupdate="onTimeupdate"
-        @loadedmetadata="onLoadedmetadata"
+        @ontimeupdate="onTimeupdate"
+        @onloadedmetadata="onLoadedmetadata"
         :src="musicSrc"
       ></audio>
     </div>
@@ -78,7 +78,6 @@ import { useCounterStore } from '@/store/index'
 import http from '@/request/index'
 import music from '@/static/music/falling-star.mp3'
 
-
 const store = useCounterStore()
 const musicStute = ref(false)
 const slider = ref(0)
@@ -90,7 +89,11 @@ const pageContent = reactive({
     name: '星球坠落Live',
     picUrl:
       'http://p1.music.126.net/Hx-PJgpdWJIA8PEx_2XJag==/109951163575606355.jpg?param=130y130',
-    ar: '艾热/李佳隆'
+    ar: [
+      {
+        name: '艾热/李佳隆'
+      }
+    ]
   } as SongItem,
   playTime: 0,
   allTime: 0
@@ -100,22 +103,13 @@ const musicList = reactive({
   index: 0
 })
 const subscribe = store.$subscribe(
-  async (
-    mutation: {
-      events: {
-        [x: string]: any
-        key: string
-      }
-    },
-    state: { musicSrcData: string }
-  ) => {
+  async (mutation) => {
     // 监听pinia state变化
-    const newMusicStore = mutation.events
+    const newMusicStore: any = mutation.events
     console.log('oo1', mutation, newMusicStore.key)
     if (newMusicStore.key === 'musicIDs') {
       console.log(newMusicStore.newValue)
-      
-      
+
       const index = newMusicStore.newValue.index
       musicList.list = newMusicStore.newValue.ids
       musicList.index = newMusicStore.newValue.index
@@ -127,22 +121,22 @@ const subscribe = store.$subscribe(
   { detached: true }
 )
 
-const playMusic = async(index: number) => {
-  console.log(index);
+const playMusic = async (index: number) => {
+  console.log(index)
   musicList.index = index
   slider.value = 0
-  
+
   const musicData = await http.get('song/url', {
     id: musicList.list[index]
   })
   musicSrc.value = musicData.data[0].url
   showFooter.value = true
   // store.setMusicSrc(musicData.data[0].url)
-  const datas = await http.get('/song/detail', {
+  const datas = await http.get<SongItem[]>('/song/detail', {
     ids: musicList.list[index]
   })
-  console.log('datas', datas);
-  
+  console.log('datas', datas)
+
   pageContent.songItem.name = datas.songs[0].name
   let songAr = ''
   datas.songs[0].ar &&
@@ -153,8 +147,8 @@ const playMusic = async(index: number) => {
       }
       songAr = songAr.concat('/', item.name)
     })
-  pageContent.songItem.ar = songAr
-  pageContent.songItem.picUrl = datas.songs[0].al.picUrl
+  pageContent.songItem.ar[0].name = songAr
+  pageContent.songItem.picUrl = datas.songs[0]?.al?.picUrl
   // console.log(musicData.data[0].url);
 
   // console.log('new',musicSrc.value);
@@ -219,7 +213,7 @@ const onPlay = () => {
 // 改变播放位置
 const changeCurrentTime = (index: number) => {
   videoPlayer.value.currentTime = (index / 100) * pageContent.allTime
-  
+
   // console.log(index, videoPlayer.value)
 }
 const inputCurrentTime = (index: number) => {

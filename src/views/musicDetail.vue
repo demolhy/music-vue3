@@ -98,7 +98,7 @@ const pageContent = reactive({
   Lyindex: 0,
   songData: {} as SongData,
   objLyric: [] as ObjLyri,
-  total: '',
+  total: '' as string,
   commentList: [] as CommentList
 })
 const boxShow = ref(store.showDetail)
@@ -107,7 +107,7 @@ const loading = ref(false)
 const emptyData = ref(false)
 // 获取歌曲信息
 const getContent = async () => {
-  const data = await http.get('/song/detail', { ids: 516823326 })
+  const data = await http.get<SongData[]>('/song/detail', { ids: 516823326 })
   pageContent.songData = data.songs[0]
   // console.log(proxy.$loadings);
   
@@ -123,12 +123,12 @@ const getContent = async () => {
 // 获取评论
 const getHotComment = async () => {
   loading.value = true
-  const data = await http.get('/comment/hot', { id: 516823326, type: 0, sortType: 1, offset: count.value, limit: 20 })
+  const data = await http.get<CommentList>('/comment/hot', { id: 516823326, type: 0, sortType: 1, offset: count.value, limit: 20 })
   // pageContent.commentList = [...pageContent.commentList, ...data.data.comments]
   // pageContent.total = data.data.totalCount
   pageContent.total = data.total
   loading.value = false
-  if (data.hotComments.length === 0) {
+  if ((data.hotComments).length === 0) {
     emptyData.value = true
     return
   }

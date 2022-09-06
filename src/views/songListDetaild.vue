@@ -1,16 +1,16 @@
 <template>
   <div class="musicContent" v-loading-state:state="loading">
-    <div class="music_content" v-if="pageContent.songList.playlist">
+    <div class="music_content" v-if="pageContent.songList">
       <div class="header">
-        <img class="lf" :src="pageContent.songList.playlist.coverImgUrl" alt="" />
+        <img class="lf" :src="pageContent.songList.coverImgUrl" alt="" />
         <div class="rg">
           <div class="title">
             <span>歌单</span>
-            <p>{{ pageContent.songList.playlist.name }}</p>
+            <p>{{ pageContent.songList.name }}</p>
           </div>
           <div class="msg">
-            <img :src="pageContent.songList.playlist.creator.avatarUrl" alt="" />
-            <p class="name">{{ pageContent.songList.playlist.creator.nickname }}</p>
+            <img :src="pageContent.songList.creator.avatarUrl" alt="" />
+            <p class="name">{{ pageContent.songList.creator.nickname }}</p>
             <span>2021-04-27创建</span>
           </div>
           <div class="btn_box">
@@ -20,11 +20,11 @@
             </div>
             <div class="item">
               <i class="iconfont icon-shoucang"></i>
-              <span>收藏({{ pageContent.songList.playlist.subscribedCount }})</span>
+              <span>收藏({{ pageContent.songList.subscribedCount }})</span>
             </div>
             <div class="item">
               <i class="iconfont icon-fenxiang"></i>
-              <span>分享({{ pageContent.songList.playlist.shareCount }})</span>
+              <span>分享({{ pageContent.songList.shareCount }})</span>
             </div>
             <div class="item">
               <i class="iconfont icon-xiazai"></i>
@@ -32,13 +32,13 @@
             </div>
           </div>
           <div class="data">
-            <div class="list">标签： {{ pageContent.songList.playlist.tags[0] }}</div>
+            <div class="list">标签： {{ pageContent.songList.tags[0] }}</div>
             <div class="list">
-              <span>歌曲数：{{ pageContent.songList.playlist.trackCount }}</span>
-              <span>播放数：{{ pageContent.songList.playlist.playCount }}</span>
+              <span>歌曲数：{{ pageContent.songList.trackCount }}</span>
+              <span>播放数：{{ pageContent.songList.playCount }}</span>
             </div>
-            <div class="list text" :title="pageContent.songList.playlist.description">
-              简介：{{ pageContent.songList.playlist.description }}
+            <div class="list text" :title="pageContent.songList.description">
+              简介：{{ pageContent.songList.description }}
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@
           </div>
           <div
             class="list"
-            v-for="(item, index) in pageContent.songList.playlist.tracks"
+            v-for="(item, index) in pageContent.songList.tracks"
             :key="index"
             @dblclick="onPalyMusic(item.id, item.name)"
           >
@@ -94,22 +94,23 @@
 <script setup lang="ts">
 // import { musicItem } from "../api/api";
 import { reactive, onMounted, computed, ref } from 'vue';
-import { SongList } from '@/request/index'
+import { SongList } from '@/types/home'
 import http from '@/request/index'
 import { useRoute } from 'vue-router'
 import { useCounterStore } from '@/store/index'
+import { ElNotification } from 'element-plus';
 
 const route = useRoute()
 const store = useCounterStore()
 const pageContent = reactive({
-  songList: [] as SongList
+  songList: {} as SongList
 })
 const loading = ref(false)
 
 const onPalyMusic = (ids: number, name: string) => {
   // console.log(ids, pageContent.newMusicList);
   const musicArr: number[] = []
-  pageContent.songList.playlist.tracks && pageContent.songList.playlist.tracks.map((item: { id: number }) => {
+  pageContent.songList.tracks && pageContent.songList.tracks.map((item: { id: number }) => {
     musicArr.push(item.id)
   })
   console.log(musicArr, musicArr.indexOf(ids));
@@ -126,8 +127,8 @@ const onPalyMusic = (ids: number, name: string) => {
   })
 }
 const getContent = async () => {
-  const data = await http.get('playlist/detail', { id: route.query.id })
-  pageContent.songList = data
+  const data = await http.get<SongList>('playlist/detail', { id: route.query.id })
+  pageContent.songList = data.playlist
   loading.value = false
 }
 // 歌曲时长

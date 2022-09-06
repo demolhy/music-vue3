@@ -11,7 +11,15 @@ interface Result {
 
 // 请求响应参数，包含data
 interface ResultData<T = any> extends Result {
-  data?: T;
+  [x: string]: any;
+  [x: number]: T;
+  playlist: T;
+  total: string;
+  songs: T;
+  banners: T;
+  playlists: T;
+  result: T;
+  hotComments: T
 }
 const URL: string = '/dev'
 enum RequestEnums {

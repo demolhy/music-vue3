@@ -50,14 +50,14 @@
               class="list"
               v-for="(item, index) in pageContent.newMusicList"
               :key="index"
-              @dblclick="onPalyMusic(item.id, item.name)"
+              @dblclick="onPalyMusic(item.id)"
             >
               <div class="lf">
                 <span>{{ index + 1 }}</span>
                 <img :src="item.picUrl" />
                 <h5>{{ item.name }}</h5>
               </div>
-              <div class="singer">{{ item.song.artists[0].name }}</div>
+              <div class="singer">{{ item.singerName }}</div>
               <div class="album">
                 {{
                   item.song.transName === null ? item.name : item.song.transName
@@ -88,10 +88,6 @@ import { Banners, SongMenuList, NewMusicList } from '@/types/home'
 import http from '@/request/index'
 import { useRouter } from 'vue-router'
 import { useCounterStore } from '@/store/index'
-const { appContext } = getCurrentInstance()!
-
-
-
 
 const store = useCounterStore()
 const router = useRouter()
@@ -107,18 +103,18 @@ let pageContent = reactive({
 
 // 获取轮播图
 const getBanner = async () => {
-  const data = await http.get('/banner')
+  const data = await http.get<Banners>('/banner')
   pageContent.bannerList = data.banners
   console.log(data, pageContent.bannerList)
 }
 // 获取歌单
 const getSongMenuList = async () => {
-  const data = await http.get('/top/playlist/highquality', { limit: 9 })
+  const data = await http.get<SongMenuList>('/top/playlist/highquality', { limit: 9 })
   pageContent.songMenuList = data.playlists
 }
 // 获取最新音乐
 const getNewMusicList = async () => {
-  const data = await http.get('/personalized/newsong', { limit: 20 })
+  const data = await http.get<NewMusicList>('/personalized/newsong', { limit: 20 })
   pageContent.newMusicList = data.result
   // progressBar.hide()
   loading.value = false
@@ -133,34 +129,12 @@ const toListDetail = (id: number) => {
     }
   })
 }
-const onPalyMusic = async(ids: number, name: string) => {
-  console.log(ElMessage);
-  
-  console.log(ids, pageContent.newMusicList);
-  const musicArr: number[] = []
-  pageContent.newMusicList && pageContent.newMusicList.map((item: { id: number }) => {
-    musicArr.push(item.id)
-  })
-  console.log(musicArr, musicArr.indexOf(ids));
-
-  store.setMusicIDArr({
-    index: musicArr.indexOf(ids),
-    ids: musicArr
-  })
-
-  ElNotification({
-    title: '正在播放...',
-    message: name,
-    duration: 2000,
-  })
-  
-  
-  // const musicData = await http.get('song/url', { id: ids })
-  // store.setMusicSrc(musicData.data[0].url)
-  // const data = await http.get('/song/detail', { ids })
-  // console.log(musicData.data[0].url);
-  
-  
+const onPalyMusic = async(ids: number) => {
+  console.log(ids);
+  const musicData = await http.get<any>('song/url', { id: ids })
+  store.setMusicSrc(musicData.data[0].url)
+  const data = await http.get('/song/detail', { ids })
+  console.log(musicData.data[0].url);
 }
 // 歌曲时长
 const getDuration = computed(() => {

@@ -10,6 +10,7 @@ export type SongMenuListItem = {
 }
 
 export type NewMusicListItem = {
+  id: number,
   picUrl: string,
   name: string,
   singerName: string,
@@ -20,28 +21,27 @@ export type NewMusicListItem = {
 }
 
 export type SongListItem = {
-  playlist: {
+  id: number,
+  coverImgUrl: string,
+  name: string,
+  subscribedCount: string,
+  shareCount: string,
+  tags: string[],
+  trackCount: number,
+  playCount: number,
+  description: string,
+  tracks: {
     id: number,
-    coverImgUrl: string,
     name: string,
-    subscribedCount: string,
-    shareCount: string,
-    tags: [],
-    trackCount: number,
-    playCount: number,
-    description: string,
-    tracks: {
-      name: string,
-      ar: { name: string }[],
-      al: {
-        name: string
-      },
-      dt: string
-    }[],
-    creator: {
-      avatarUrl: string,
-      nickname: string
-    }
+    ar: { name: string }[],
+    al: {
+      name: string
+    },
+    dt: number
+  }[],
+  creator: {
+    avatarUrl: string,
+    nickname: string
   }
 }
 
@@ -60,6 +60,8 @@ export type ObjLyricItem = {
 }
 
 export type CommentListItem = {
+  content: string,
+  likedCount: string,
   user: {
     avatarUrl: string,
     nickname: string,
@@ -70,13 +72,18 @@ export type CommentListItem = {
 
 export type SongItem = {
   name: string,
-  picUrl: string,
-  ar: string
+  picUrl: string | undefined,
+  ar: {
+    name: string
+  }[],
+  al?: {
+    picUrl: string
+  }
 }
 
 export type Banners = BannersItem[]
 export type SongMenuList = SongMenuListItem[]
 export type NewMusicList = NewMusicListItem[]
-export type SongList = SongListItem[]
+export type SongList = SongListItem
 export type ObjLyri = ObjLyricItem[]
 export type CommentList = CommentListItem[]
