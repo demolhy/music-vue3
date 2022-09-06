@@ -1,5 +1,5 @@
 <template>
-  <div class="musicContent">
+  <div class="musicContent" v-loading-state:state="loading">
     <div class="music_content" v-if="pageContent.songList.playlist">
       <div class="header">
         <img class="lf" :src="pageContent.songList.playlist.coverImgUrl" alt="" />
@@ -62,7 +62,7 @@
             class="list"
             v-for="(item, index) in pageContent.songList.playlist.tracks"
             :key="index"
-             @click="toDetails(item.id)"
+            @dblclick="onPalyMusic(item.id, item.name)"
           >
             <div class="item1">
               <span>{{ index + 1 }}</span>
@@ -93,21 +93,42 @@
 
 <script setup lang="ts">
 // import { musicItem } from "../api/api";
-import { reactive, onMounted, computed } from 'vue';
+import { reactive, onMounted, computed, ref } from 'vue';
 import { SongList } from '@/request/index'
 import http from '@/request/index'
 import { useRoute } from 'vue-router'
+import { useCounterStore } from '@/store/index'
 
 const route = useRoute()
+const store = useCounterStore()
 const pageContent = reactive({
   songList: [] as SongList
 })
-const toDetails = (id: number) => {
+const loading = ref(false)
 
+const onPalyMusic = (ids: number, name: string) => {
+  // console.log(ids, pageContent.newMusicList);
+  const musicArr: number[] = []
+  pageContent.songList.playlist.tracks && pageContent.songList.playlist.tracks.map((item: { id: number }) => {
+    musicArr.push(item.id)
+  })
+  console.log(musicArr, musicArr.indexOf(ids));
+
+  store.setMusicIDArr({
+    index: musicArr.indexOf(ids),
+    ids: musicArr
+  })
+
+  ElNotification({
+    title: '正在播放...',
+    message: name,
+    duration: 2000,
+  })
 }
 const getContent = async () => {
   const data = await http.get('playlist/detail', { id: route.query.id })
   pageContent.songList = data
+  loading.value = false
 }
 // 歌曲时长
 const getDuration = computed(() => {
@@ -117,6 +138,7 @@ const getDuration = computed(() => {
   }
 })
 onMounted(() => {
+  loading.value = true
   getContent()
 })
 </script>

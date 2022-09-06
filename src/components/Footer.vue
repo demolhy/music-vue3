@@ -1,23 +1,22 @@
 <template>
-  <div class="footer">
+  <div class="footer" v-if="showFooter">
     <div class="slider">
       <el-slider
         v-model="slider"
         size="small"
         :format-tooltip="formatProcessToolTip"
-        @change="changeCurrentTime"
-        @input="changeCurrentTime"
+        @input="inputCurrentTime"
       />
     </div>
     <div class="player_box">
       <div class="left_box">
         <div class="pic" @click="showBox">
-          <img :src="pageContent.songItem.al.picUrl" alt="" />
+          <img :src="pageContent.songItem.picUrl" alt="" />
         </div>
         <div class="text">
           <div class="title" v-if="pageContent.songItem">
             {{ pageContent.songItem.name
-            }}<span>- {{ pageContent.songItem.ar[0].name }}</span>
+            }}<span>- {{ pageContent.songItem.ar }}</span>
           </div>
           <div class="time">
             {{ realFormatSecond(pageContent.playTime) }} /
@@ -45,7 +44,7 @@
       ></audio>
     </div>
     <div class="play_icon">
-      <i @click="onNext" class="icon1 iconfont icon-xiayishou1"></i>
+      <i @click="onLast" class="icon1 iconfont icon-xiayishou1"></i>
       <i
         v-if="musicStute"
         @click.stop="onPauseing"
@@ -56,7 +55,7 @@
         @click.stop="onPlaying"
         class="iconfont icon2 icon-bofang"
       ></i>
-      <i class="icon1 iconfont icon-xiayishou"></i>
+      <i @click="onNext" class="icon1 iconfont icon-xiayishou"></i>
     </div>
     <!-- <div class="progress">
       <span>00:00</span>
@@ -76,65 +75,114 @@
 import { ref, reactive, Ref, watch, nextTick } from 'vue'
 import { SongItem } from '@/types/home'
 import { useCounterStore } from '@/store/index'
+import http from '@/request/index'
 import music from '@/static/music/falling-star.mp3'
+
 
 const store = useCounterStore()
 const musicStute = ref(false)
 const slider = ref(0)
 const videoPlayer = ref()
 const musicSrc = ref(store.musicSrcData)
+const showFooter = ref(false)
 const pageContent = reactive({
   songItem: {
     name: '星球坠落Live',
-    al: {
-      picUrl:
-        'http://p1.music.126.net/Hx-PJgpdWJIA8PEx_2XJag==/109951163575606355.jpg?param=130y130'
-    },
-    ar: [
-      {
-        name: '艾热/李佳隆'
-      }
-    ]
+    picUrl:
+      'http://p1.music.126.net/Hx-PJgpdWJIA8PEx_2XJag==/109951163575606355.jpg?param=130y130',
+    ar: '艾热/李佳隆'
   } as SongItem,
   playTime: 0,
   allTime: 0
 })
-console.log('old',musicSrc.value);
+const musicList = reactive({
+  list: [],
+  index: 0
+})
 const subscribe = store.$subscribe(
-  async(mutation: unknown, state: { musicSrcData: string }) => {
-    /*
-      * mutation主要包含三个属性值：
-      *   events：当前state改变的具体数据，包括改变前的值和改变后的值等等数据
-      *   storeId：是当前store的id
-      *   type：用于记录这次数据变化是通过什么途径，主要有三个分别是
-      *         “direct” ：通过 action 变化的
-                ”patch object“ ：通过 $patch 传递对象的方式改变的
-                “patch function” ：通过 $patch 传递函数的方式改变的
-      *
-      * */
-    // 我们就可以在此处监听store中值的变化，当变化为某个值的时候，去做一些业务操作之类的
-    // console.log(mutation)
-    // console.log(state.baseUrl)
-    // if (state.baseUrl === afterChangeUrl) isShow.value = true
-    // else isShow.value = false
-    console.log('====================================');
-    console.log(mutation, state.musicSrcData);
-    console.log('====================================');
-    musicSrc.value = state.musicSrcData
-    console.log('new',musicSrc.value);
-    
-    slider.value = 0
-    await nextTick()
-    videoPlayer.value.play()
+  async (
+    mutation: {
+      events: {
+        [x: string]: any
+        key: string
+      }
+    },
+    state: { musicSrcData: string }
+  ) => {
+    // 监听pinia state变化
+    const newMusicStore = mutation.events
+    console.log('oo1', mutation, newMusicStore.key)
+    if (newMusicStore.key === 'musicIDs') {
+      console.log(newMusicStore.newValue)
+      
+      
+      const index = newMusicStore.newValue.index
+      musicList.list = newMusicStore.newValue.ids
+      musicList.index = newMusicStore.newValue.index
+      playMusic(musicList.index)
+    }
+
+    // videoPlayer.value.play()
   },
   { detached: true }
 )
 
+const playMusic = async(index: number) => {
+  console.log(index);
+  musicList.index = index
+  slider.value = 0
+  
+  const musicData = await http.get('song/url', {
+    id: musicList.list[index]
+  })
+  musicSrc.value = musicData.data[0].url
+  showFooter.value = true
+  // store.setMusicSrc(musicData.data[0].url)
+  const datas = await http.get('/song/detail', {
+    ids: musicList.list[index]
+  })
+  console.log('datas', datas);
+  
+  pageContent.songItem.name = datas.songs[0].name
+  let songAr = ''
+  datas.songs[0].ar &&
+    datas.songs[0].ar.map((item: { name: string }, index: number) => {
+      if (index === 0) {
+        songAr = songAr.concat(item.name)
+        return
+      }
+      songAr = songAr.concat('/', item.name)
+    })
+  pageContent.songItem.ar = songAr
+  pageContent.songItem.picUrl = datas.songs[0].al.picUrl
+  // console.log(musicData.data[0].url);
+
+  // console.log('new',musicSrc.value);
+
+  slider.value = 0
+  await nextTick()
+  videoPlayer.value.play()
+}
 const showBox = () => {
   store.setShowDetail()
 }
+const onLast = () => {
+  // store.setCount()
+  videoPlayer.value.pause()
+  if (musicList.index === 0) {
+    playMusic(0)
+  } else {
+    playMusic(musicList.index - 1)
+  }
+}
 const onNext = () => {
-  store.setCount()
+  // store.setCount()
+  videoPlayer.value.pause()
+  if (musicList.index !== musicList.list.length - 1) {
+    playMusic(musicList.index + 1)
+  } else {
+    playMusic(0)
+  }
 }
 const onPauseing = () => {
   musicStute.value = !musicStute.value
@@ -149,6 +197,14 @@ const onTimeupdate = (res: { target: { currentTime: number } }): void => {
   // console.log(res)
   pageContent.playTime = res.target.currentTime
   slider.value = (pageContent.playTime / pageContent.allTime) * 100
+  if (slider.value === 100) {
+    videoPlayer.value.pause()
+    if (musicList.index !== musicList.list.length - 1) {
+      playMusic(musicList.index + 1)
+    } else {
+      playMusic(0)
+    }
+  }
 }
 // 音乐总时长
 const onLoadedmetadata = (res: { target: { duration: string } }) => {
@@ -163,7 +219,15 @@ const onPlay = () => {
 // 改变播放位置
 const changeCurrentTime = (index: number) => {
   videoPlayer.value.currentTime = (index / 100) * pageContent.allTime
-  console.log(index, videoPlayer.value)
+  
+  // console.log(index, videoPlayer.value)
+}
+const inputCurrentTime = (index: number) => {
+  videoPlayer.value.currentTime = (index / 100) * pageContent.allTime
+  // if (index === 100 && musicList.index !== musicList.list.length - 1) {
+  //   console.log('==>', musicList.index);
+  //   playMusic(musicList.index + 1)
+  // }
 }
 const formatProcessToolTip = (index = 0) => {
   const html = (pageContent.allTime / 100) * index

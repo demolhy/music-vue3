@@ -16,8 +16,8 @@
     </div>
     <div class="right">
       <div class="photo" @click="login">
-        <img src="../assets/login2.png" />
-        <span>未登录</span>
+        <img src="../assets/img1.jpg" />
+        <span>游客</span>
       </div>
       <div class="icon">
         <i class="icon1 iconfont icon-xin"></i>
@@ -120,8 +120,9 @@ const login = () => {
   span {
     letter-spacing: 2px;
     color: #fff;
-    font-size: 14px;
+    font-size: 18px;
     margin-left: 10px;
+    font-family: cursive;
   }
 }
 .page {

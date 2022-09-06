@@ -50,14 +50,14 @@
               class="list"
               v-for="(item, index) in pageContent.newMusicList"
               :key="index"
-              @dblclick="onPalyMusic(item.id)"
+              @dblclick="onPalyMusic(item.id, item.name)"
             >
               <div class="lf">
                 <span>{{ index + 1 }}</span>
                 <img :src="item.picUrl" />
                 <h5>{{ item.name }}</h5>
               </div>
-              <div class="singer">{{ item.singerName }}</div>
+              <div class="singer">{{ item.song.artists[0].name }}</div>
               <div class="album">
                 {{
                   item.song.transName === null ? item.name : item.song.transName
@@ -88,6 +88,10 @@ import { Banners, SongMenuList, NewMusicList } from '@/types/home'
 import http from '@/request/index'
 import { useRouter } from 'vue-router'
 import { useCounterStore } from '@/store/index'
+const { appContext } = getCurrentInstance()!
+
+
+
 
 const store = useCounterStore()
 const router = useRouter()
@@ -129,12 +133,32 @@ const toListDetail = (id: number) => {
     }
   })
 }
-const onPalyMusic = async(ids: number) => {
-  console.log(ids);
-  const musicData = await http.get('song/url', { id: ids })
-  store.setMusicSrc(musicData.data[0].url)
-  const data = await http.get('/song/detail', { ids })
-  console.log(musicData.data[0].url);
+const onPalyMusic = async(ids: number, name: string) => {
+  console.log(ElMessage);
+  
+  console.log(ids, pageContent.newMusicList);
+  const musicArr: number[] = []
+  pageContent.newMusicList && pageContent.newMusicList.map((item: { id: number }) => {
+    musicArr.push(item.id)
+  })
+  console.log(musicArr, musicArr.indexOf(ids));
+
+  store.setMusicIDArr({
+    index: musicArr.indexOf(ids),
+    ids: musicArr
+  })
+
+  ElNotification({
+    title: '正在播放...',
+    message: name,
+    duration: 2000,
+  })
+  
+  
+  // const musicData = await http.get('song/url', { id: ids })
+  // store.setMusicSrc(musicData.data[0].url)
+  // const data = await http.get('/song/detail', { ids })
+  // console.log(musicData.data[0].url);
   
   
 }
