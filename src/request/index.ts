@@ -21,7 +21,11 @@ interface ResultData<T = any> extends Result {
   result: T;
   hotComments: T
 }
-const URL: string = '/dev'
+
+
+const URL = import.meta.env.VITE_USER_NODE_ENV === 'production' ? import.meta.env.VITE_REQUEST_URL : '/dev-api'
+
+console.log(import.meta.env, URL);
 enum RequestEnums {
   TIMEOUT = 20000,
   OVERDUE = 600, // 登录失效

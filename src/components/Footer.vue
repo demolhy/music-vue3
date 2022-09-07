@@ -15,8 +15,7 @@
         </div>
         <div class="text">
           <div class="title" v-if="pageContent.songItem">
-            {{ pageContent.songItem.name
-            }}<span>- {{ pageContent.songItem.ar }}</span>
+            {{ pageContent.songItem.name }}<span>- {{ pageContent.songItem.ar }}</span>
           </div>
           <div class="time">
             {{ realFormatSecond(pageContent.playTime) }} /
@@ -38,8 +37,8 @@
         ref="videoPlayer"
         @pause="onPause"
         @play="onPlay"
-        @ontimeupdate="onTimeupdate"
-        @onloadedmetadata="onLoadedmetadata"
+        @timeupdate="onTimeupdate"
+        @loadedmetadata="onLoadedmetadata"
         :src="musicSrc"
       ></audio>
     </div>
@@ -107,7 +106,7 @@ const subscribe = store.$subscribe(
     // 监听pinia state变化
     const newMusicStore: any = mutation.events
     console.log('oo1', mutation, newMusicStore.key)
-    if (newMusicStore.key === 'musicIDs') {
+    if (newMusicStore.key === 'musicIDs' || newMusicStore.key === 'musicSrcData') {
       console.log(newMusicStore.newValue)
 
       const index = newMusicStore.newValue.index
@@ -131,6 +130,8 @@ const playMusic = async (index: number) => {
   })
   musicSrc.value = musicData.data[0].url
   showFooter.value = true
+  console.log(showFooter.value);
+  
   // store.setMusicSrc(musicData.data[0].url)
   const datas = await http.get<SongItem[]>('/song/detail', {
     ids: musicList.list[index]

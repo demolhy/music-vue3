@@ -1,6 +1,6 @@
 <template>
   <div class="musicContent" v-loading-state:state="loading">
-    <div class="music_content" v-if="pageContent.songList">
+    <div class="music_content" v-if="!loading">
       <div class="header">
         <img class="lf" :src="pageContent.songList.coverImgUrl" alt="" />
         <div class="rg">

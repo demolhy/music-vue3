@@ -22,14 +22,20 @@ export default defineConfig({
       '@': resolve(__dirname, 'src')
     }
   },
+  define: {
+    // 'process.env': process.env
+  },
   server: {
+    host: 'localhost',
+    https: false,
+    
     open: true,
     proxy: {
-      '/dev': {
-        target: 'https://netease-liard.vercel.app',
+      '^/dev-api': {
+        target: 'https://music.linhaiyu.top',
         changeOrigin: true,
-        secure: true,
-        rewrite: path => path.replace('/dev', '')
+        // secure: true,
+        rewrite: path => path.replace('/dev-api', '')
       }
     }
   }
