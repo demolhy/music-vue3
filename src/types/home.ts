@@ -37,7 +37,8 @@ export type SongListItem = {
     al: {
       name: string
     },
-    dt: number
+    dt: number,
+    fee: number
   }[],
   creator: {
     avatarUrl: string,

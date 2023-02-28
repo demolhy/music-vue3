@@ -1,47 +1,54 @@
 <template>
   <div class="musicContent" v-loading-state:state="loading">
-    <div class="music_content" v-if="!loading">
+    <div class="music_content">
       <div class="header">
-        <img class="lf" :src="pageContent.songList.coverImgUrl" alt="" />
-        <div class="rg">
-          <div class="title">
-            <span>歌单</span>
-            <p>{{ pageContent.songList.name }}</p>
+        <el-image
+          class="lf"
+          fit="cover"
+          :src="pageContent.songList.coverImgUrl"
+        />
+        <!-- <img :src="pageContent.songList.coverImgUrl" alt="" /> -->
+        <el-skeleton class="rg" :loading="loading" animated>
+          <div class="rg" v-if="pageContent.songList.creator">
+            <div class="title">
+              <span>歌单</span>
+              <p>{{ pageContent.songList.name }}</p>
+            </div>
+            <div class="msg">
+              <img :src="pageContent.songList.creator.avatarUrl" alt="" />
+              <p class="name">{{ pageContent.songList.creator.nickname }}</p>
+              <span>2021-04-27创建</span>
+            </div>
+            <div class="btn_box">
+              <div class="item1 item">
+                <i class="iconfont icon-bofang"></i>
+                <span>播放全部</span>
+              </div>
+              <div class="item">
+                <i class="iconfont icon-shoucang"></i>
+                <span>收藏({{ pageContent.songList.subscribedCount }})</span>
+              </div>
+              <div class="item">
+                <i class="iconfont icon-fenxiang"></i>
+                <span>分享({{ pageContent.songList.shareCount }})</span>
+              </div>
+              <div class="item">
+                <i class="iconfont icon-xiazai"></i>
+                <span>下载全部</span>
+              </div>
+            </div>
+            <div class="data">
+              <div class="list">标签： {{ pageContent.songList.tags[0] }}</div>
+              <div class="list">
+                <span>歌曲数：{{ pageContent.songList.trackCount }}</span>
+                <span>播放数：{{ pageContent.songList.playCount }}</span>
+              </div>
+              <div class="list text" :title="pageContent.songList.description">
+                简介：{{ pageContent.songList.description }}
+              </div>
+            </div>
           </div>
-          <div class="msg">
-            <img :src="pageContent.songList.creator.avatarUrl" alt="" />
-            <p class="name">{{ pageContent.songList.creator.nickname }}</p>
-            <span>2021-04-27创建</span>
-          </div>
-          <div class="btn_box">
-            <div class="item1 item">
-              <i class="iconfont icon-bofang"></i>
-              <span>播放全部</span>
-            </div>
-            <div class="item">
-              <i class="iconfont icon-shoucang"></i>
-              <span>收藏({{ pageContent.songList.subscribedCount }})</span>
-            </div>
-            <div class="item">
-              <i class="iconfont icon-fenxiang"></i>
-              <span>分享({{ pageContent.songList.shareCount }})</span>
-            </div>
-            <div class="item">
-              <i class="iconfont icon-xiazai"></i>
-              <span>下载全部</span>
-            </div>
-          </div>
-          <div class="data">
-            <div class="list">标签： {{ pageContent.songList.tags[0] }}</div>
-            <div class="list">
-              <span>歌曲数：{{ pageContent.songList.trackCount }}</span>
-              <span>播放数：{{ pageContent.songList.playCount }}</span>
-            </div>
-            <div class="list text" :title="pageContent.songList.description">
-              简介：{{ pageContent.songList.description }}
-            </div>
-          </div>
-        </div>
+        </el-skeleton>
       </div>
 
       <div class="music_list">
@@ -69,7 +76,15 @@
               <i class="iconfont icon-xinaixin"></i>
               <i class="iconfont icon-xiazai"></i>
             </div>
-            <div class="item2">{{ item.name }}</div>
+            <div class="item2">
+              {{ item.name }}
+              <img
+                v-if="item.fee === 1"
+                class="vip"
+                src="../assets/VIP.png"
+                alt=""
+              />
+            </div>
             <div class="item3">{{ item.ar[0].name }}</div>
             <div class="item4">{{ item.al.name }}</div>
             <div class="item5">{{ getDuration(item.dt) }}</div>
@@ -93,12 +108,12 @@
 
 <script setup lang="ts">
 // import { musicItem } from "../api/api";
-import { reactive, onMounted, computed, ref } from 'vue';
+import { reactive, onMounted, computed, ref } from 'vue'
 import { SongList } from '@/types/home'
 import http from '@/request/index'
 import { useRoute } from 'vue-router'
 import { useCounterStore } from '@/store/index'
-import { ElNotification } from 'element-plus';
+// import { ElNotification } from 'element-plus';
 
 const route = useRoute()
 const store = useCounterStore()
@@ -110,10 +125,11 @@ const loading = ref(false)
 const onPalyMusic = (ids: number, name: string) => {
   // console.log(ids, pageContent.newMusicList);
   const musicArr: number[] = []
-  pageContent.songList.tracks && pageContent.songList.tracks.map((item: { id: number }) => {
-    musicArr.push(item.id)
-  })
-  console.log(musicArr, musicArr.indexOf(ids));
+  pageContent.songList.tracks &&
+    pageContent.songList.tracks.map((item: { id: number }) => {
+      musicArr.push(item.id)
+    })
+  console.log(musicArr, pageContent.songList.tracks)
 
   store.setMusicIDArr({
     index: musicArr.indexOf(ids),
@@ -123,11 +139,13 @@ const onPalyMusic = (ids: number, name: string) => {
   ElNotification({
     title: '正在播放...',
     message: name,
-    duration: 2000,
+    duration: 2000
   })
 }
 const getContent = async () => {
-  const data = await http.get<SongList>('playlist/detail', { id: route.query.id })
+  const data = await http.get<SongList>('/playlist/detail', {
+    id: route.query.id
+  })
   pageContent.songList = data.playlist
   loading.value = false
 }
@@ -179,7 +197,7 @@ onMounted(() => {
   }
   .rg {
     margin-left: 30px;
-    width: 80%;
+    width: 70%;
     .title {
       display: flex;
       align-items: center;
@@ -272,7 +290,7 @@ onMounted(() => {
     margin-top: 30px;
     position: relative;
     &::after {
-      content: "";
+      content: '';
       position: absolute;
       bottom: 0;
       left: 30px;
@@ -302,7 +320,7 @@ onMounted(() => {
       &:nth-child(even) {
         background: #f5f5f5;
       }
-      &>div{
+      & > div {
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
@@ -315,7 +333,7 @@ onMounted(() => {
         justify-content: space-between;
         align-items: center;
         padding-right: 20px;
-        span{
+        span {
           width: 10%;
         }
         i {
@@ -331,9 +349,12 @@ onMounted(() => {
           font-size: 14px;
         }
       }
+      .vip {
+        width: 20px;
+        margin-left: 5px;
+      }
       .item2 {
         width: 40%;
-        
       }
       .item3 {
         width: 20%;

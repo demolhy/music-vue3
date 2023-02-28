@@ -15,7 +15,7 @@
         </div>
         <div class="text">
           <div class="title" v-if="pageContent.songItem">
-            {{ pageContent.songItem.name }}<span>- {{ pageContent.songItem.ar }}</span>
+            {{ pageContent.songItem.name }}<span>- {{ pageContent.songItem.ar[0].name }}</span>
           </div>
           <div class="time">
             {{ realFormatSecond(pageContent.playTime) }} /
@@ -136,8 +136,6 @@ const playMusic = async (index: number) => {
   const datas = await http.get<SongItem[]>('/song/detail', {
     ids: musicList.list[index]
   })
-  console.log('datas', datas)
-
   pageContent.songItem.name = datas.songs[0].name
   let songAr = ''
   datas.songs[0].ar &&
@@ -188,7 +186,7 @@ const onPlaying = () => {
   videoPlayer.value.play()
 }
 // 播放位置
-const onTimeupdate = (res: { target: { currentTime: number } }): void => {
+const onTimeupdate = (res: any): void => {
   // console.log(res)
   pageContent.playTime = res.target.currentTime
   slider.value = (pageContent.playTime / pageContent.allTime) * 100
@@ -202,7 +200,7 @@ const onTimeupdate = (res: { target: { currentTime: number } }): void => {
   }
 }
 // 音乐总时长
-const onLoadedmetadata = (res: { target: { duration: string } }) => {
+const onLoadedmetadata = (res: any) => {
   pageContent.allTime = parseInt(res.target.duration)
 }
 const onPause = () => {
